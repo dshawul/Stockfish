@@ -92,13 +92,13 @@ bool EGBB::load(const std::string& spath,int egbb_cache_size) {
 //EGBB board representation and then probe
 Value EGBB::probe(const Position& pos, int ply, int fifty) {
 	int npieces = pos.count<ALL_PIECES>(WHITE) + pos.count<ALL_PIECES>(BLACK);
-
+	int pdepth = (npieces < MAX_PIECES) ? 
+                 probe_depth :                                     //5-pieces probed in whole of search depth
+	             probe_depth / 2;                                  //6-pieces only in the first half
 	if(is_loaded                                                   //must be loaded
 		&& npieces <= MAX_PIECES                                   //maximum 6 pieces
-		&& (ply >= probe_depth || (ply > 1 && fifty == 0))         //exceeded depth OR capture/pawn-push
-		&& ( npieces <= 4 ||                                       //assume 4-pieces are in RAM
-		     (ply <= probe_depth && npieces < MAX_PIECES) ||       //5-pieces probed in whole of search depth
-		     (ply <= probe_depth / 2 && npieces == MAX_PIECES) )   //6-pieces only in the first half
+		&& (ply >= pdepth || (ply > 1 && fifty == 0))              //exceeded depth OR capture/pawn-push
+		&& ( npieces <= 4 || ply <= pdepth )                       //4-men OR we are inside depth limit
 		); 
 	else
 		return VALUE_NONE;

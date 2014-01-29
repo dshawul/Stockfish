@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
+#include "probe.h"
 
 using std::string;
 
@@ -86,6 +87,8 @@ void init(OptionsMap& o) {
   o["Slow Mover"]                  = Option(70, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
+  o["EgbbPath"]                    = Option("d:/egbb5men/");
+  o["EgbbCache"]                   = Option(32, 1, 16384);
 }
 
 

@@ -157,6 +157,7 @@ public:
   // Other properties of the position
   Color side_to_move() const;
   int game_ply() const;
+  int get_rule50() const {return st->rule50;}
   bool is_chess960() const;
   Thread* this_thread() const;
   int64_t nodes_searched() const;

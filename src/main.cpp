@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
+#include "probe.h"
 
 int main(int argc, char* argv[]) {
 
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
   Eval::init();
   Threads.init();
   TT.set_size(Options["Hash"]);
+  EGBB::load(Options["EgbbPath"],Options["EgbbCache"]);
 
   std::string args;
 

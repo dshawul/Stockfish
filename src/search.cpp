@@ -35,6 +35,7 @@
 #include "thread.h"
 #include "tt.h"
 #include "ucioption.h"
+#include "probe.h"
 
 namespace Search {
 
@@ -319,6 +320,8 @@ namespace {
     // Iterative deepening loop until requested to stop or target depth reached
     while (++depth <= MAX_PLY && !Signals.stop && (!Limits.depth || depth <= Limits.depth))
     {
+		EGBB::probe_depth = 3 * depth / 4;
+
         // Age out PV variability metric
         BestMoveChanges *= 0.8;
 
@@ -449,7 +452,6 @@ namespace {
     }
   }
 
-
   // search<>() is the main search function for both PV and non-PV nodes and for
   // normal and SplitPoint nodes. When called just after a split point the search
   // is simpler because we have already probed the hash table, done a null move
@@ -557,6 +559,11 @@ namespace {
 
         return ttValue;
     }
+
+	//Probe EGBBs
+	value = EGBB::probe(pos,ss->ply,pos.get_rule50());
+	if(value != VALUE_NONE)
+		return value;
 
     // Step 5. Evaluate the position statically and update parent's gain statistics
     if (inCheck)
@@ -1102,6 +1109,11 @@ moves_loop: // When in check and at SpNode search starts from here
         return ttValue;
     }
 
+	//Probe EGBBs
+	value = EGBB::probe(pos,ss->ply,pos.get_rule50());
+	if(value != VALUE_NONE)
+		return value;
+
     // Evaluate the position statically
     if (InCheck)
     {
@@ -1254,7 +1266,10 @@ moves_loop: // When in check and at SpNode search starts from here
     assert(v != VALUE_NONE);
 
     return  v >= VALUE_MATE_IN_MAX_PLY  ? v + ply
-          : v <= VALUE_MATED_IN_MAX_PLY ? v - ply : v;
+          : v <= VALUE_MATED_IN_MAX_PLY ? v - ply 
+		  : v >= VALUE_EGBB_LIM         ? v + VALUE_EGBB_PLY * ply
+		  : v <=-VALUE_EGBB_LIM         ? v - VALUE_EGBB_PLY * ply
+		  : v;
   }
 
 
@@ -1266,7 +1281,10 @@ moves_loop: // When in check and at SpNode search starts from here
 
     return  v == VALUE_NONE             ? VALUE_NONE
           : v >= VALUE_MATE_IN_MAX_PLY  ? v - ply
-          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply : v;
+          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply 
+		  : v >= VALUE_EGBB_LIM         ? v - VALUE_EGBB_PLY * ply
+		  : v <=-VALUE_EGBB_LIM         ? v + VALUE_EGBB_PLY * ply
+		  : v;
   }
 
 

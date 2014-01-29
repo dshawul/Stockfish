@@ -172,7 +172,7 @@ endif
 ### 3.1 Selecting compiler (default = gcc)
 
 CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -fno-rtti $(EXTRACXXFLAGS)
-LDFLAGS += $(EXTRALDFLAGS)
+LDFLAGS += -ldl $(EXTRALDFLAGS)
 
 ifeq ($(COMP),)
 	COMP=gcc

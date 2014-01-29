@@ -320,6 +320,7 @@ namespace {
     // Iterative deepening loop until requested to stop or target depth reached
     while (++depth <= MAX_PLY && !Signals.stop && (!Limits.depth || depth <= Limits.depth))
     {
+		// Set EGBB probe depth to three quarters
 		EGBB::probe_depth = 3 * depth / 4;
 
         // Age out PV variability metric

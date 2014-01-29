@@ -1,15 +1,16 @@
 
-#ifdef _MSC_VER
-#    include <windows.h>
+#include <cstring>
+#include "probe.h"
+
+#ifdef _WIN32   // Windows and MinGW
 #    undef CDECL
 #    define CDECL __cdecl
-#else
+#else     // Linux - Unix
 #    include <dlfcn.h>
 #    define CDECL
 #endif
 
-#include "probe.h"
-
+//EGBB piece and color types
 enum egbb_colors {
 	_WHITE,_BLACK
 };
@@ -21,19 +22,23 @@ enum egbb_load_types {
 	LOAD_NONE,LOAD_4MEN,SMART_LOAD,LOAD_5MEN
 };
 
-#define _NOTFOUND 99999
-#define MAX_PIECES 6
+#define _NOTFOUND   99999
 
-typedef int (CDECL *PPROBE_EGBB) (int player, int* piece,int* square);
-typedef void (CDECL *PLOAD_EGBB) (char* path,int cache_size,int load_options);
-static PPROBE_EGBB probe_egbb;
-static int is_loaded = false;
-int EGBB::probe_depth = 0;
+//Function pointers to probe/load EGBBs
+namespace EGBB {
+	typedef int (CDECL *PPROBE_EGBB) (int player, int* piece,int* square);
+	typedef void (CDECL *PLOAD_EGBB) (char* path,int cache_size,int load_options);
+
+	PPROBE_EGBB probe_egbb;
+	bool is_loaded = false;
+	int probe_depth = 0;
+	const int MAX_PIECES = 6;
+}
 
 //Load EGBBs:
 //Load the appropriate EGBB dll and get the address 
 //of load/probe functions.
-#ifdef _MSC_VER
+#ifdef _WIN32
 #	ifdef IS_64BIT
 #		define EGBB_NAME "egbbdll64.dll"
 #	else
@@ -47,7 +52,7 @@ int EGBB::probe_depth = 0;
 #	endif
 #endif
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #    define HMODULE void*
 #    define LoadLibrary(x) dlopen(x,RTLD_LAZY)
 #    define GetProcAddress dlsym
@@ -92,12 +97,13 @@ Value EGBB::probe(const Position& pos, int ply, int fifty) {
 		&& npieces <= MAX_PIECES                                   //maximum 6 pieces
 		&& (ply >= probe_depth || (ply > 1 && fifty == 0))         //exceeded depth OR capture/pawn-push
 		&& ( npieces <= 4 ||                                       //assume 4-pieces are in RAM
-		     (ply <= probe_depth && npieces < MAX_PIECES) ||       //5-pieces probed whole search depth
+		     (ply <= probe_depth && npieces < MAX_PIECES) ||       //5-pieces probed in whole of search depth
 		     (ply <= probe_depth / 2 && npieces == MAX_PIECES) )   //6-pieces only in the first half
 		); 
 	else
 		return VALUE_NONE;
 
+	//Loop over pieces and fill up piece and square arrays
 	Square s;
 	int piece[8],square[8],count = 0;
 
@@ -109,6 +115,7 @@ Value EGBB::probe(const Position& pos, int ply, int fifty) {
 		count++;								\
 	}											\
 };
+
 	ADD_PIECE(KING,   WHITE, _WKING);
 	ADD_PIECE(KING,   BLACK, _BKING);
 	ADD_PIECE(QUEEN,  WHITE, _WQUEEN);
@@ -124,20 +131,17 @@ Value EGBB::probe(const Position& pos, int ply, int fifty) {
 	piece[count] = _EMPTY;
 	square[count] = pos.ep_square();
 
+	//probe and return adjusted value
 	int score = probe_egbb(
 		(pos.side_to_move() == WHITE) ? _WHITE : _BLACK,
 		piece,square);
 
 	if(score == _NOTFOUND)
 		return VALUE_NONE;
-
-	Value value;
-	if(score > 0)
-		value =  VALUE_EGBB_WIN - VALUE_EGBB_PLY * ply + (score - 5000);
+	else if(score > 0)
+		return  VALUE_EGBB_WIN - VALUE_EGBB_PLY * ply + (score - 5000);
 	else if(score < 0)
-		value = -VALUE_EGBB_WIN + VALUE_EGBB_PLY * ply + (score + 5000);
+		return -VALUE_EGBB_WIN + VALUE_EGBB_PLY * ply + (score + 5000);
 	else
-		value = VALUE_DRAW;
-
-	return value;
+		return VALUE_DRAW;
 }

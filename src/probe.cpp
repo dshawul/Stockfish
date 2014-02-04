@@ -58,7 +58,7 @@ namespace EGBB {
 #    define GetProcAddress dlsym
 #endif
 
-bool EGBB::load(const std::string& spath,int egbb_cache_size) {
+bool EGBB::load(const std::string& spath,int cache_size) {
 	HMODULE hmod;
 	PLOAD_EGBB load_egbb;
 	char path[256];
@@ -79,7 +79,7 @@ bool EGBB::load(const std::string& spath,int egbb_cache_size) {
 	if((hmod = LoadLibrary(path)) != 0) {
 		load_egbb = (PLOAD_EGBB) GetProcAddress(hmod,"load_egbb_xmen");
      	probe_egbb = (PPROBE_EGBB) GetProcAddress(hmod,"probe_egbb_xmen");
-        load_egbb(main_path,egbb_cache_size * 1024 * 1024,LOAD_4MEN);
+        load_egbb(main_path,cache_size * 1024 * 1024,LOAD_4MEN);
 		is_loaded = true;
 		return true;
 	}

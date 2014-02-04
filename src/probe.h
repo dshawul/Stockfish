@@ -6,7 +6,7 @@
 
 namespace EGBB {
 	extern int probe_depth;
-	bool load(const std::string& path,int);
+	bool load(const std::string& path,int cache_size);
 	Value probe(const Position& pos, int ply, int fifty);
 }
 

@@ -321,7 +321,7 @@ namespace {
     while (++depth <= MAX_PLY && !Signals.stop && (!Limits.depth || depth <= Limits.depth))
     {
 		// Set EGBB probe depth to three quarters
-		EGBB::probe_depth = 3 * depth / 4;
+		EGBB::probe_depth = Options["EgbbProbeDepth"] * depth / 100;
 
         // Age out PV variability metric
         BestMoveChanges *= 0.8;
@@ -1111,7 +1111,7 @@ moves_loop: // When in check and at SpNode search starts from here
     }
 
 	//Probe EGBBs
-	value = EGBB::probe(pos,ss->ply,pos.get_rule50());
+	value = EGBB::probe(pos,ss->ply,0);
 	if(value != VALUE_NONE)
 		return value;
 

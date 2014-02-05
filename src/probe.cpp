@@ -56,11 +56,12 @@ namespace EGBB {
 #ifndef _WIN32
 #    define HMODULE void*
 #    define LoadLibrary(x) dlopen(x,RTLD_LAZY)
+#    define FreeLibrary(x) dlclose(x)
 #    define GetProcAddress dlsym
 #endif
 
 bool EGBB::load(const std::string& spath,int cache_size) {
-	HMODULE hmod;
+	static HMODULE hmod = 0;
 	PLOAD_EGBB load_egbb;
 	char path[256];
 	char terminator;
@@ -77,6 +78,7 @@ bool EGBB::load(const std::string& spath,int cache_size) {
 		}
 	}
 	strcat(path,EGBB_NAME);
+	if(hmod) FreeLibrary(hmod);
 	if((hmod = LoadLibrary(path)) != 0) {
 		load_egbb = (PLOAD_EGBB) GetProcAddress(hmod,"load_egbb_xmen");
      	probe_egbb = (PPROBE_EGBB) GetProcAddress(hmod,"probe_egbb_xmen");

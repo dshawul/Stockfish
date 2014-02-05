@@ -32,6 +32,7 @@ namespace EGBB {
 	PPROBE_EGBB probe_egbb;
 	bool is_loaded = false;
 	int probe_depth = 0;
+	int tb_hits = 0;
 	const int MAX_PIECES = 6;
 }
 
@@ -138,10 +139,13 @@ Value EGBB::probe(const Position& pos, int ply, int fifty) {
 
 	if(score == _NOTFOUND)
 		return VALUE_NONE;
-	else if(score > 0)
-		return  VALUE_EGBB_WIN - VALUE_EGBB_PLY * ply + (score - 5000);
-	else if(score < 0)
-		return -VALUE_EGBB_WIN + VALUE_EGBB_PLY * ply + (score + 5000);
-	else
-		return VALUE_DRAW;
+	else {
+		tb_hits++;
+		if(score > 0)
+			return  VALUE_EGBB_WIN - VALUE_EGBB_PLY * ply + (score - 5000);
+		else if(score < 0)
+			return -VALUE_EGBB_WIN + VALUE_EGBB_PLY * ply + (score + 5000);
+		else
+			return VALUE_DRAW;
+	}
 }

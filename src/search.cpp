@@ -260,7 +260,7 @@ void Search::think() {
 finalize:
 
   // When search is stopped this info is not printed
-  sync_cout << "info nodes " << RootPos.nodes_searched()
+  sync_cout << "info nodes " << RootPos.nodes_searched() <<"tbhits " << EGBB::tb_hits
             << " time " << Time::now() - SearchTime + 1 << sync_endl;
 
   // When we reach the maximum depth, we can arrive here without a raise of
@@ -316,6 +316,9 @@ namespace {
         PVSize = 4;
 
     PVSize = std::min(PVSize, RootMoves.size());
+
+	//zero tb hits
+	EGBB::tb_hits = 0;
 
     // Iterative deepening loop until requested to stop or target depth reached
     while (++depth <= MAX_PLY && !Signals.stop && (!Limits.depth || depth <= Limits.depth))
@@ -1400,6 +1403,7 @@ moves_loop: // When in check and at SpNode search starts from here
           << " nodes "     << pos.nodes_searched()
           << " nps "       << pos.nodes_searched() * 1000 / elapsed
           << " time "      << elapsed
+		  << " tbhits "    << EGBB::tb_hits
           << " multipv "   << i + 1
           << " pv";
 

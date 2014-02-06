@@ -41,7 +41,7 @@ void on_eval(const Option&) { Eval::init(); }
 void on_threads(const Option&) { Threads.read_uci_options(); }
 void on_hash_size(const Option& o) { TT.set_size(o); }
 void on_clear_hash(const Option&) { TT.clear(); }
-void on_load_egbb(const Option&) {EGBB::load(Options["EgbbPath"],Options["EgbbCache"]);}
+void on_load_egbb(const Option&) {EGBB::load(Options["EgbbPath"],Options["EgbbCache"],Options["EgbbLoadType"]);}
 
 /// Our case insensitive less() function as required by UCI protocol
 bool ci_less(char c1, char c2) { return tolower(c1) < tolower(c2); }
@@ -89,6 +89,7 @@ void init(OptionsMap& o) {
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
   o["EgbbPath"]                    = Option("egbb/", on_load_egbb);
   o["EgbbCache"]                   = Option(32, 1, 16384, on_load_egbb);
+  o["EgbbLoadType"]                = Option(3,  0, 3);
   o["EgbbProbeDepth"]              = Option(75, 1, 100);
 }
 

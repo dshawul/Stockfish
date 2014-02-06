@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
   Eval::init();
   Threads.init();
   TT.set_size(Options["Hash"]);
-  EGBB::load(Options["EgbbPath"],Options["EgbbCache"]);
+  EGBB::load(Options["EgbbPath"],Options["EgbbCache"],Options["EgbbLoadType"]);
 
   std::string args;
 

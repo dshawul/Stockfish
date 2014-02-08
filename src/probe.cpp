@@ -31,7 +31,8 @@ namespace EGBB {
 
 	PPROBE_EGBB probe_egbb;
 	bool is_loaded = false;
-	int probe_depth = 0;
+	int ply_limit = 0;
+	int depth_limit = 6;
 	int tb_hits = 0;
 	const int MAX_PIECES = 6;
 }
@@ -93,15 +94,17 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 //Probe EGBBs:
 //Change interanal Stockfish board representaion to 
 //EGBB board representation and then probe
-Value EGBB::probe(const Position& pos, int ply, int fifty) {
+Value EGBB::probe(const Position& pos, int ply, int depth, int fifty) {
 	int npieces = pos.count<ALL_PIECES>(WHITE) + pos.count<ALL_PIECES>(BLACK);
 	int pdepth = (npieces < MAX_PIECES) ? 
-                 probe_depth :                                     //5-pieces probed in whole of search depth
-	             probe_depth / 2;                                  //6-pieces only in the first half
+                 ply_limit :                                       //5-pieces probed in whole of search depth
+	             ply_limit / 2;                                    //6-pieces only in the first half
 	if(is_loaded                                                   //must be loaded
 		&& npieces <= MAX_PIECES                                   //maximum 6 pieces
-		&& (ply >= pdepth || (ply > 1 && fifty == 0))              //exceeded depth OR capture/pawn-push
-		&& ( npieces <= 4 || ply <= pdepth )                       //4-men OR we are inside depth limit
+		&& depth >= depth_limit * ONE_PLY                          //depth above threshold
+		&& ((ply >= pdepth) ||                                     //ply above threshold
+			(ply > 1 && fifty == 0))                               //capture/pawn-push
+		&& ( npieces <= 5 || ply <= pdepth )                       //5-men OR we are inside depth limit
 		); 
 	else
 		return VALUE_NONE;

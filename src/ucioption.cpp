@@ -90,7 +90,8 @@ void init(OptionsMap& o) {
   o["EgbbPath"]                    = Option("egbb/", on_load_egbb);
   o["EgbbCache"]                   = Option(32, 1, 16384, on_load_egbb);
   o["EgbbLoadType"]                = Option(3,  0, 3);
-  o["EgbbProbeDepth"]              = Option(75, 1, 100);
+  o["EgbbDepthLimit"]              = Option(6,  1, 100);
+  o["EgbbPlyLimitPercent"]         = Option(50, 1, 100);
 }
 
 

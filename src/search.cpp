@@ -260,7 +260,7 @@ void Search::think() {
 finalize:
 
   // When search is stopped this info is not printed
-  sync_cout << "info nodes " << RootPos.nodes_searched() <<"tbhits " << EGBB::tb_hits
+  sync_cout << "info nodes " << RootPos.nodes_searched() <<" tbhits " << EGBB::tb_hits
             << " time " << Time::now() - SearchTime + 1 << sync_endl;
 
   // When we reach the maximum depth, we can arrive here without a raise of
@@ -319,12 +319,13 @@ namespace {
 
 	//zero tb hits
 	EGBB::tb_hits = 0;
+	EGBB::depth_limit = Options["EgbbDepthLimit"];
 
     // Iterative deepening loop until requested to stop or target depth reached
     while (++depth <= MAX_PLY && !Signals.stop && (!Limits.depth || depth <= Limits.depth))
     {
 		// Set EGBB probe depth to three quarters
-		EGBB::probe_depth = Options["EgbbProbeDepth"] * depth / 100;
+		EGBB::ply_limit = Options["EgbbPlyLimitPercent"] * depth / 100;
 
         // Age out PV variability metric
         BestMoveChanges *= 0.8;
@@ -565,7 +566,7 @@ namespace {
     }
 
 	//Probe EGBBs
-	value = EGBB::probe(pos,ss->ply,pos.get_rule50());
+	value = EGBB::probe(pos,ss->ply,depth,pos.get_rule50());
 	if(value != VALUE_NONE)
 		return value;
 
@@ -1112,11 +1113,6 @@ moves_loop: // When in check and at SpNode search starts from here
         ss->currentMove = ttMove; // Can be MOVE_NONE
         return ttValue;
     }
-
-	//Probe EGBBs
-	value = EGBB::probe(pos,ss->ply,0);
-	if(value != VALUE_NONE)
-		return value;
 
     // Evaluate the position statically
     if (InCheck)

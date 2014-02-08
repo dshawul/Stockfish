@@ -6,7 +6,10 @@
 #    undef CDECL
 #    define CDECL __cdecl
 #else     // Linux - Unix
+#	 define dlsym __shut_up
 #    include <dlfcn.h>
+#	 undef dlsym
+extern "C" void *(*dlsym(void *handle, const char *symbol))();
 #    define CDECL
 #endif
 
@@ -27,7 +30,7 @@ enum egbb_load_types {
 //Function pointers to probe/load EGBBs
 namespace EGBB {
 	typedef int (CDECL *PPROBE_EGBB) (int player, int* piece,int* square);
-	typedef void (CDECL *PLOAD_EGBB) (char* path,int cache_size,int load_options);
+	typedef void (CDECL *PLOAD_EGBB) (const char* path,int cache_size,int load_options);
 
 	PPROBE_EGBB probe_egbb;
 	bool is_loaded = false;
@@ -66,7 +69,7 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 	PLOAD_EGBB load_egbb;
 	char path[256];
 	char terminator;
-	char* main_path = (char*)spath.c_str();
+	const char* main_path = spath.c_str();
 	size_t plen = strlen(main_path);
 	strcpy(path,main_path);
 	if (plen) {
@@ -82,7 +85,7 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 	if(hmod) FreeLibrary(hmod);
 	if((hmod = LoadLibrary(path)) != 0) {
 		load_egbb = (PLOAD_EGBB) GetProcAddress(hmod,"load_egbb_xmen");
-     	probe_egbb = (PPROBE_EGBB) GetProcAddress(hmod,"probe_egbb_xmen");
+		probe_egbb = (PPROBE_EGBB) GetProcAddress(hmod,"probe_egbb_xmen");
         load_egbb(main_path,cache_size * 1024 * 1024,egbb_load_type);
 		is_loaded = true;
 		return true;

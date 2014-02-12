@@ -68,12 +68,11 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 	static HMODULE hmod = 0;
 	PLOAD_EGBB load_egbb;
 	char path[256];
-	char terminator;
-	const char* main_path = spath.c_str();
-	size_t plen = strlen(main_path);
-	strcpy(path,main_path);
+
+	strcpy(path,spath.c_str());
+	size_t plen = strlen(path);
 	if (plen) {
-		terminator = main_path[strlen(main_path)-1];
+		char terminator = path[plen - 1];
 		if (terminator != '/' && terminator != '\\') {
 			if (strchr(path, '\\') != NULL)
 				strcat(path, "\\");
@@ -81,12 +80,15 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 				strcat(path, "/");
 		}
 	}
+	plen = strlen(path);
 	strcat(path,EGBB_NAME);
+
 	if(hmod) FreeLibrary(hmod);
 	if((hmod = LoadLibrary(path)) != 0) {
 		load_egbb = (PLOAD_EGBB) GetProcAddress(hmod,"load_egbb_xmen");
 		probe_egbb = (PPROBE_EGBB) GetProcAddress(hmod,"probe_egbb_xmen");
-        load_egbb(main_path,cache_size * 1024 * 1024,egbb_load_type);
+		path[plen] = 0;
+        load_egbb(path,cache_size * 1024 * 1024,egbb_load_type);
 		is_loaded = true;
 		return true;
 	}
@@ -99,15 +101,12 @@ bool EGBB::load(const std::string& spath,int cache_size,int egbb_load_type) {
 //EGBB board representation and then probe
 Value EGBB::probe(const Position& pos, int ply, int depth, int fifty) {
 	int npieces = pos.count<ALL_PIECES>(WHITE) + pos.count<ALL_PIECES>(BLACK);
-	int pdepth = (npieces < MAX_PIECES) ? 
-                 ply_limit :                                       //5-pieces probed in whole of search depth
-	             ply_limit / 2;                                    //6-pieces only in the first half
-	if(is_loaded                                                   //must be loaded
-		&& npieces <= MAX_PIECES                                   //maximum 6 pieces
-		&& depth >= depth_limit * ONE_PLY                          //depth above threshold
-		&& ((ply >= pdepth) ||                                     //ply above threshold
-			(ply > 1 && fifty == 0))                               //capture/pawn-push
-		&& ( npieces <= 5 || ply <= pdepth )                       //5-men OR we are inside depth limit
+	int dlimit = depth_limit * ONE_PLY;
+	int plimit = (npieces < MAX_PIECES) ? ply_limit : ply_limit / 2;                   
+	if(is_loaded && (ply > 1)                //must be loaded
+		&& npieces <= MAX_PIECES             //maximum 6 pieces
+		&& (depth >= dlimit || npieces <= 4) //hard depth limit
+		&& (ply >= plimit || fifty == 0)     //ply above threshold or capt/pawn move
 		); 
 	else
 		return VALUE_NONE;

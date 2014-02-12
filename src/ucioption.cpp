@@ -88,10 +88,10 @@ void init(OptionsMap& o) {
   o["UCI_Chess960"]                = Option(false);
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
   o["EgbbPath"]                    = Option("egbb/", on_load_egbb);
-  o["EgbbCache"]                   = Option(32, 1, 16384, on_load_egbb);
+  o["EgbbCache"]                   = Option(128, 1, 16384, on_load_egbb);
   o["EgbbLoadType"]                = Option(3,  0, 3);
-  o["EgbbDepthLimit"]              = Option(6,  1, 100);
-  o["EgbbPlyLimitPercent"]         = Option(50, 1, 100);
+  o["EgbbDepthLimit"]              = Option(2,  1, 100);
+  o["EgbbPlyLimitPercent"]         = Option(75, 1, 100);
 }
 
 
